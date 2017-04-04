@@ -34,8 +34,9 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     public static final String ERR_ERROR_INITIALIZING = "ERR_ERROR_INITIALIZING";
     public static final String ERR_UNKNOWN = "ERR_UNKNOWN";
 
-    boolean ttsInitialized = false;
-    TextToSpeech tts = null;
+    private boolean ttsInitialized = false;
+    private TextToSpeech tts = null;
+    private Locale defaultTtsLocale = null;
 
     @Override
     public void initialize(CordovaInterface cordova, final CordovaWebView webView) {
@@ -82,10 +83,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         if (status != TextToSpeech.SUCCESS) {
             tts = null;
         } else {
+            defaultTtsLocale = tts.getLanguage();
             // warm up the tts engine with an empty string
             HashMap<String, String> ttsParams = new HashMap<String, String>();
             ttsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "");
-            tts.setLanguage(new Locale("en", "US"));
+            // tts.setLanguage(new Locale("en", "US"));
             tts.speak("", TextToSpeech.QUEUE_FLUSH, ttsParams);
 
             ttsInitialized = true;
@@ -107,7 +109,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         }
 
         String text;
-        String locale;
+        Locale locale;
         double rate;
 
         if (params.isNull("text")) {
@@ -118,9 +120,11 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         }
 
         if (params.isNull("locale")) {
-            locale = "en-US";
+            locale = defaultTtsLocale;
         } else {
-            locale = params.getString("locale");
+            String[] localeArgs = params.getString("text").split("-");
+            
+            locale = new Locale(localeArgs[0], localeArgs[1]);
         }
 
         if (params.isNull("rate")) {
@@ -142,8 +146,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         HashMap<String, String> ttsParams = new HashMap<String, String>();
         ttsParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, callbackContext.getCallbackId());
 
-        String[] localeArgs = locale.split("-");
-        tts.setLanguage(new Locale(localeArgs[0], localeArgs[1]));
+        tts.setLanguage(locale);
         tts.setSpeechRate((float) rate);
 
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, ttsParams);
