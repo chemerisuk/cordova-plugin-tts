@@ -108,6 +108,16 @@ public class TTS extends CordovaPlugin implements OnInitListener {
             return;
         }
 
+        if (tts == null) {
+            callbackContext.error(ERR_ERROR_INITIALIZING);
+            return;
+        }
+
+        if (!ttsInitialized) {
+            callbackContext.error(ERR_NOT_INITIALIZED);
+            return;
+        }
+
         String text;
         Locale locale;
         double rate;
@@ -122,25 +132,21 @@ public class TTS extends CordovaPlugin implements OnInitListener {
         if (params.isNull("locale")) {
             locale = defaultTtsLocale;
         } else {
-            String[] localeArgs = params.getString("text").split("-");
-            
-            locale = new Locale(localeArgs[0], localeArgs[1]);
+            String[] localeArgs = params.getString("locale").split("-");
+
+            if (localeArgs.length == 1) {
+                locale = new Locale(localeArgs[0]);
+            } else if (localeArgs.length == 2) {
+                locale = new Locale(localeArgs[0], localeArgs[1]);
+            } else {
+                locale = defaultTtsLocale;
+            }
         }
 
         if (params.isNull("rate")) {
             rate = 1.0;
         } else {
             rate = params.getDouble("rate");
-        }
-
-        if (tts == null) {
-            callbackContext.error(ERR_ERROR_INITIALIZING);
-            return;
-        }
-
-        if (!ttsInitialized) {
-            callbackContext.error(ERR_NOT_INITIALIZED);
-            return;
         }
 
         HashMap<String, String> ttsParams = new HashMap<String, String>();
