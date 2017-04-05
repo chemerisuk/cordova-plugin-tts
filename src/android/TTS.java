@@ -32,6 +32,7 @@ public class TTS extends CordovaPlugin implements OnInitListener {
     public static final String ERR_INVALID_OPTIONS = "ERR_INVALID_OPTIONS";
     public static final String ERR_NOT_INITIALIZED = "ERR_NOT_INITIALIZED";
     public static final String ERR_ERROR_INITIALIZING = "ERR_ERROR_INITIALIZING";
+    public static final String ERR_NOT_SUPPORTED = "ERR_NOT_SUPPORTED";
     public static final String ERR_UNKNOWN = "ERR_UNKNOWN";
 
     private boolean ttsInitialized = false;
@@ -140,6 +141,13 @@ public class TTS extends CordovaPlugin implements OnInitListener {
                 locale = new Locale(localeArgs[0], localeArgs[1]);
             } else {
                 locale = defaultTtsLocale;
+            }
+            
+            if (locale != defaultTtsLocale) {
+                if (tts.isLanguageAvailable(locale) == tts.LANG_NOT_SUPPORTED) {
+                    callbackContext.error(ERR_NOT_SUPPORTED);
+                    return;
+                }
             }
         }
 
